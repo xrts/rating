@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		.rating{
+			position: relative;
+			width:359px;
+			height:59px;
+			background: url(img/star2.png) no-repeat;
+			background-position: bottom;
+			margin: 100px auto;
+		}
+		.rating-item {
+			position: absolute;
+			top: 0;
+			z-index: 3;
+			width: 71.8px;
+			height: 59px;
+		}
+		.rating-item:hover {
+			left: 0;
+			z-index: 2;
+			width: 359px;
+			height:59px;
+			background: url(img/star2.png) no-repeat;
+		}
+		.rating-item-1 {
+			left: 0;
+		}
+		.rating-item-1:hover {
+			background-position: 0 -498px;
+		}
+		.rating-item-2 {
+			left: 71.8px;
+		}
+		.rating-item-2:hover {
+			background-position: 0 -360px;
+		}
+		.rating-item-3 {
+			left: 143.6px;
+			
+		}
+		.rating-item-3:hover {
+
+		}
+		.rating-item-4 {
+			left: 215.4px;
+		}
+		.rating-item-4:hover {
+
+		}
+		.rating-item-5 {
+			left: 287.2px;
+		}
+		.rating-item-5:hover {
+
+		}
+	</style>
+</head>
+<body>
+	<div class="rating">
+		<a href="javascript:;" class="rating-item rating-item-1" title="很不好"></a>	
+		<a href="javascript:;" class="rating-item rating-item-2" title="不好"></a>	
+		<a href="javascript:;" class="rating-item rating-item-3" title="一般"></a>	
+		<a href="javascript:;" class="rating-item rating-item-4" title="好"></a>	
+		<a href="javascript:;" class="rating-item rating-item-5" title="很好"></a>	
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		body,ul,li {
+			padding: 0;
+			margin: 0;
+		}
+		ul {
+			list-style: none;
+		}
+		.rating {
+			width: 150px;
+			height: 30px;
+			margin: 100px auto;
+		}
+		.rating-item {
+			float: left;
+			width: 30px;
+			height: 30px;
+			background:url(img/star.png) no-repeat;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<ul class="rating" id="rating">
+		<li class="rating-item" title="很不好"></li>
+		<li class="rating-item" title="不好"></li>
+		<li class="rating-item" title="一般"></li>
+		<li class="rating-item" title="好"></li>
+		<li class="rating-item" title="很好"></li>
+	</ul>
+	<ul class="rating" id="rating2">
+		<li class="rating-item" title="很不好"></li>
+		<li class="rating-item" title="不好"></li>
+		<li class="rating-item" title="一般"></li>
+		<li class="rating-item" title="好"></li>
+		<li class="rating-item" title="很好"></li>
+	</ul>
+	<script type="text/javascript" src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
+	<script type="text/javascript">
+		var rating= (function(){
+
+			//继承方法 
+			var extend = function(subClass,superClass){
+				var F = function(){};
+				F.prototype = superClass.prototype;
+				subClass.prototype=new F();
+				//subClass.prototype.constructor = subClass;
+			};
+			//继承方法2,不推荐使用,影响性能
+			/*LightEntire.prototype = new Light();
+			LightHalf.prototype = new Light();*/
+			//点亮
+			var Light = function(el,options) {
+				this.$el= $(el);
+				this.$item = this.$el.find('.rating-item');
+				this.opts = options;
+				this.add=1;
+				this.selectEvent='mouseover'
+
+			};
+			Light.prototype.init = function(){
+				this.lightOn(this.opts.num);
+				if(!this.opts.readOnly){
+					this.bindEvent();
+				}
+			};
+			Light.prototype.lightOn = function(num){
+				num = parseInt(num);
+				this.$item.each(function(index){
+					if(index<num){
+						$(this).css('background-position','-2px -40px');
+					}else {
+						$(this).css('background-position','0 0');
+					}
+				})
+			};
+			Light.prototype.bindEvent = function(){
+				var _this=this;
+				var itemLength = this.$item.length;
+				_this.$el.on(_this.selectEvent,'.rating-item',function(e){
+					var $this = $(this)
+					var num = 0;
+					_this.select(e,$this);
+					num = $this.index()+_this.add;
+					_this.lightOn(num);
+					//选择星星触发事件方法一:
+					(typeof _this.opts.select === 'function') && _this.opts.select.call($(this),num,itemLength);
+					//选择星星触发事件方法二:
+					_this.$el.trigger('select',[num,itemLength]);
+				}).on('click','.rating-item',function(){
+					var num = $(this).index()+_this.add;
+					_this.opts.num = num;
+					(typeof _this.opts.chosen === 'function') && _this.opts.chosen.call(this,num,$(this),itemLength);
+					_this.$el.trigger('chosen',[num,itemLength]);
+				}).on('mouseout',function(){
+					_this.lightOn(_this.opts.num);
+				})
+			};
+			Light.prototype.select = function(){
+				throw new Error('子类必须继承此方法')
+			}
+			Light.prototype.unbindEvent = function(){
+				this.$el.off();
+			}
+
+
+			//点亮整颗星星
+			var LightEntire = function(el,options) {
+				Light.call(this,el,options);
+			};
+			//继承父类
+			extend(LightEntire,Light);
+			
+			//子类重写select方法
+			LightEntire.prototype.select = function(){
+				this.add =1;
+			}
+			
+			
+
+			//点亮半颗星星
+			var LightHalf = function(el,options) {
+				Light.call(this,el,options);
+				this.selectEvent='mousemove'
+			};
+
+			extend(LightHalf,Light);
+
+			LightHalf.prototype.lightOn = function(num){
+				var count = parseInt(num);
+				var isHalf = count !== num 
+				Light.prototype.lightOn.call(this,num)
+				if(isHalf){
+					this.$item.eq(count).css('background-position','0 -80px')
+				}
+			};
+			LightHalf.prototype.select = function(e,$this){
+				if(e.pageX-$this.offset().left<$this.width()/2) {
+					this.add=0.5;
+				}else {
+					this.add=1;
+				}
+			}
+
+			//默认参数
+			var defaults = {
+				num: 0,
+				readOnly: false,
+				select: function(){},
+				chosen:function(){}
+			}
+
+			//模式选择
+			var mode = {
+				'LightEntire':LightEntire,
+				'LightHalf':LightHalf
+			}
+			//初始化
+			var init = function(el,option){
+				var $el =$(el),
+					rating=$(el).data('rating'),
+					//给options赋值,如果option为object则将option赋值给options,否则将defaults赋值给options
+					options= $.extend({},defaults,typeof option === 'object' && option);
+				//new LightEntire(el,options).init();
+
+				//指定默认模式
+				if(!mode[options.mode]){
+					options.mode='LightEntire';
+				}
+				//创建实例
+				if(!rating){
+					$el.data('rating',(rating=new mode[options.mode](el,option)));
+					rating.init();
+				}
+				//如果option为字符串,则调用rating.unbindEvent事件,解绑所有
+				if(typeof option === 'string') rating[option]();
+				
+			};
+			return {
+				init: init
+			}
+		})()
+
+		rating.init('#rating',{
+			num: 2.5,
+			mode:'LightEntire',
+			chosen: function(){
+				rating.init('#rating','unbindEvent');
+			}
+			/*select: function(target,itemLength) {
+				console.log(target+'/'+itemLength);
+				console.log(this)
+			}*/
+		});
+
+		/*$('#rating').on('select',function(e,num,total){
+			console.log(num+'/'+total);
+		}).on('chosen',function(e,num,total){
+			console.log(num+'/'+total);
+		})*/
+		
+	</script>
+</body>
+</html>
